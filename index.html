@@ -93,16 +93,13 @@
                     push(customerOrdersRef, {
                         tableNumber,
                         selectedChairNumbers,
-
-                    }).then(() => {
-                        alert("Rezervácia bola akceptovaná!")
-
                     });
                 }
             }
 
             if (orderInfo.length > 0) {
                 alert(`Objednávky pre ${guestName}:\n${orderInfo.join("\n")}`);
+                alert("Rezervácia bola akceptovaná!")
             }
 
             guestNameInput.value = "";
