@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking</title>
+    <link rel="Website icon" type="png" href="https://icon-library.com/images/restaurant-icon/restaurant-icon-27.jpg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Rezervácia miest pri stoloch na plese</h1>
+    
+    <div class="form">
+        <label for="guestName">Meno hosťa:</label>
+        <input type="text" id="guestName" placeholder="Zadajte meno hosťa">
+    </div>
+    <div class="table-layout">
+
+    </div>
+    <button id="confirmButton">Potvrdiť rezerváciu</button>
+    
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+        import { getDatabase, ref, push, set} from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyDR8AqUghyaG09itGPl3PAIDPe78uZG384",
+            authDomain: "booking-ples.firebaseapp.com",
+            databaseURL: "https://booking-ples-default-rtdb.firebaseio.com",
+            projectId: "booking-ples",
+            storageBucket: "booking-ples.appspot.com",
+            messagingSenderId: "804661018584",
+            appId: "1:804661018584:web:0c5d407bab48d436557cad",
+            measurementId: "G-B40G7TX61J"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        const guestNameInput = document.getElementById("guestName");
+        const tableLayout = document.querySelector(".table-layout");
+        const confirmButton = document.getElementById("confirmButton");
+
+        const chairCounts = [4, 6, 4, 5, 3, 10, 4, 4, 4, 4];
+
+        function createChair(table, chairNumber) {
+            const chair = document.createElement("div");
+            chair.classList.add("chair");
+            chair.textContent = chairNumber;
+            chair.addEventListener("click", () => {
+                chair.classList.toggle("selected");
+            });
+            table.appendChild(chair);
+        }
+
+        function createTable(tableNumber, chairCount) {
+            const table = document.createElement("div");
+            table.classList.add("table");
+            table.textContent = `Stôl ${tableNumber}`;
+            for (let i = 1; i <= chairCount; i++) {
+                createChair(table, i);
+            }
+            return table;
+        }
+
+        for (let i = 1; i <= chairCounts.length; i++) {
+            tableLayout.appendChild(createTable(i, chairCounts[i - 1]));
+        }
+
+        confirmButton.addEventListener("click", () => {
+            const guestName = guestNameInput.value;
+            if (guestName.trim() === "") {
+                alert("Prosím vyplňte meno hosta.");
+                return;
+            }
+
+            const orderInfo = [];
+
+            for (let i = 0; i < chairCounts.length; i++) {
+                const selectedChairs = document.querySelectorAll(`.table:nth-child(${i + 1}) .chair.selected`);
+                if (selectedChairs.length > 0) {
+                    const tableNumber = i + 1;
+                    const selectedChairNumbers = Array.from(selectedChairs).map(chair => chair.textContent).join(", ");
+                    orderInfo.push(`Objednávka: Stôl ${tableNumber}, Stoličky ${selectedChairNumbers}`);
+
+                    const customerOrdersRef = ref(database, 'orders/' + guestName);
+                    push(customerOrdersRef, {
+                        tableNumber,
+                        selectedChairNumbers,
+
+                    }).then(() => {
+                        alert("Rezervácia bola akceptovaná!")
+                    });
+                }
+            }
+
+            if (orderInfo.length > 0) {
+                alert(`Objednávky pre ${guestName}:\n${orderInfo.join("\n")}`);
+            }
+
+        });
+
+        function clearSelection() {
+            const selectedChairs = document.querySelectorAll(".chair.selected");
+            selectedChairs.forEach(chair => {
+                chair.classList.remove("selected");
+            });
+        }
+
+        const bookedChairs = {
+            1: []
+        };
+
+        for (let i = 1; i <= chairCounts.length; i++) {
+            const table = createTable(i, chairCounts[i - 1], bookedChairs[i] || []);
+            tableLayout.appendChild(table);
+        }
+
+        confirmButton.addEventListener("click", () => {
+            const guestName = guestNameInput.value;
+            if (guestName.trim() === "") {
+                alert("Prosím vyplňte meno hosta.");
+                return;
+            }
+    
+            const selectedChairs = document.querySelectorAll(".chair.selected");
+            if (selectedChairs.length > 0) {
+                const selectedChairInfo = Array.from(selectedChairs).map(chair => ({
+                    table: chair.dataset.table,
+                    chair: chair.dataset.chair,
+                }));
+    
+                fetch('book_chairs.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        guestName: guestName,
+                        selectedChairInfo: selectedChairInfo,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Rezervace byla úspěšně uložena.");
+                    } else {
+                        alert("Nastala chyba při zpracování rezervace.");
+                    }
+                })
+                .catch(error => {
+                    console.error('Chyba:', error);
+                    //alert('Nastala chyba při zpracování rezervace.');
+                });
+    
+                selectedChairs.forEach(chair => {
+                    chair.classList.add('booked');
+                    chair.style.backgroundColor = "#FF0000";
+                    chair.style.cursor = "not-allowed";
+                });
+    
+                guestNameInput.value = "";
+                clearSelection();
+            }
+        });
+
+    </script>
+</body>
+</html>
