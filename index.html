@@ -96,6 +96,7 @@
 
                     }).then(() => {
                         alert("Rezervácia bola akceptovaná!")
+
                     });
                 }
             }
@@ -104,6 +105,8 @@
                 alert(`Objednávky pre ${guestName}:\n${orderInfo.join("\n")}`);
             }
 
+            guestNameInput.value = "";
+            clearSelection();
         });
 
         function clearSelection() {
@@ -113,62 +116,6 @@
             });
         }
 
-        const bookedChairs = {
-            1: []
-        };
-
-        for (let i = 1; i <= chairCounts.length; i++) {
-            const table = createTable(i, chairCounts[i - 1], bookedChairs[i] || []);
-            tableLayout.appendChild(table);
-        }
-
-        confirmButton.addEventListener("click", () => {
-            const guestName = guestNameInput.value;
-            if (guestName.trim() === "") {
-                alert("Prosím vyplňte meno hosta.");
-                return;
-            }
-    
-            const selectedChairs = document.querySelectorAll(".chair.selected");
-            if (selectedChairs.length > 0) {
-                const selectedChairInfo = Array.from(selectedChairs).map(chair => ({
-                    table: chair.dataset.table,
-                    chair: chair.dataset.chair,
-                }));
-    
-                fetch('book_chairs.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        guestName: guestName,
-                        selectedChairInfo: selectedChairInfo,
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert("Rezervace byla úspěšně uložena.");
-                    } else {
-                        alert("Nastala chyba při zpracování rezervace.");
-                    }
-                })
-                .catch(error => {
-                    console.error('Chyba:', error);
-                    //alert('Nastala chyba při zpracování rezervace.');
-                });
-    
-                selectedChairs.forEach(chair => {
-                    chair.classList.add('booked');
-                    chair.style.backgroundColor = "#FF0000";
-                    chair.style.cursor = "not-allowed";
-                });
-    
-                guestNameInput.value = "";
-                clearSelection();
-            }
-        });
 
     </script>
 </body>
