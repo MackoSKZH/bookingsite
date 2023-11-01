@@ -1,13 +1,14 @@
 body {
     font-family: 'Arial', sans-serif;
     text-align: center;
-    background-color: #000;
+    background-color: #333; /* Darker background color */
     color: #FFD700;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    min-height: 100vh; /* Vertically centered content */
 }
 
 h1 {
@@ -16,13 +17,10 @@ h1 {
 }
 
 .form {
-    position: fixed;
-    margin-top: 0px;
-    top: 0;
-    left: 0;
     width: 100%;
-    background-color: #000;
-    z-index: 1; 
+    background-color: #222; /* Dark background color */
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 label {
@@ -32,39 +30,41 @@ label {
 
 input[type="text"] {
     font-size: 16px;
-    padding: 5px;
+    padding: 10px; /* Increased padding for input fields */
     border: 1px solid #ccc;
+    border-radius: 5px; /* Rounded input fields */
+    width: 100%;
 }
 
 .seating-plan {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    margin-top: 80px;
+    margin-top: 20px; /* Slightly increased margin */
 }
 
 .table {
-    font-size: 60px;
-    margin: 20px; 
+    font-size: 36px; /* Reduced font size for tables */
+    margin: 10px; /* Reduced margin for tables */
 }
 
 .chair {
     width: 50px;
     height: 50px;
-    margin: 10px;
-    background-color: #000;
+    margin: 5px; /* Reduced margin for chairs */
+    background-color: #333; /* Darker chair background */
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px; /* Reduced font size for chairs */
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid #FFD700;
+    border-radius: 50%; /* Rounded chairs */
 }
 
 .chair.selected {
     background-color: #FFD700;
-    border: 1px solid #000;
-    color: #000;
+    border: 1px solid #333; /* Darker border for selected chairs */
 }
 
 button {
@@ -75,11 +75,14 @@ button {
     color: #000;
     cursor: pointer;
     margin-top: 20px;
+    border-radius: 5px; /* Rounded buttons */
+    transition: background-color 0.3s; /* Smooth hover transition */
 }
 
 button:hover {
     background-color: #C0C000;
 }
+
 .booked {
     background-color: #FF0000;
     cursor: not-allowed;
