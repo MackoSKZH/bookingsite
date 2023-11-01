@@ -22,7 +22,7 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-        import { getDatabase, ref, push, set} from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
+        import { getDatabase, ref, push, set, get} from "https://www.gstatic.com/firebasejs/10.5.0/firebase-database.js";
         // TODO: Add SDKs for Firebase products that you want to use
         // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -47,31 +47,40 @@
         const tableLayout = document.querySelector(".table-layout");
         const confirmButton = document.getElementById("confirmButton");
 
-        const chairCounts = [4, 6, 4, 5, 3, 10, 4, 4, 4, 4];
+        let chairCounts = [];
 
-        function createChair(table, chairNumber) {
-            const chair = document.createElement("div");
-            chair.classList.add("chair");
-            chair.textContent = chairNumber;
-            chair.addEventListener("click", () => {
-                chair.classList.toggle("selected");
-            });
-            table.appendChild(chair);
-        }
+        const chairCountsRef = ref(database, 'chairCounts');
+        get(chairCountsRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                chairCounts = snapshot.val().split(',').map(Number);
 
-        function createTable(tableNumber, chairCount) {
-            const table = document.createElement("div");
-            table.classList.add("table");
-            table.textContent = `Stôl ${tableNumber}`;
-            for (let i = 1; i <= chairCount; i++) {
-                createChair(table, i);
+                function createChair(table, chairNumber) {
+                    const chair = document.createElement("div");
+                    chair.classList.add("chair");
+                    chair.textContent = chairNumber;
+                    chair.addEventListener("click", () => {
+                        if (!chair.classList.contains("booked")) {
+                            chair.classList.toggle("selected");
+                        }
+                    });
+                    table.appendChild(chair);
+                }
+
+                function createTable(tableNumber, chairCount) {
+                    const table = document.createElement("div");
+                    table.classList.add("table");
+                    table.textContent = `Stôl ${tableNumber}`;
+                    for (let i = 1; i <= chairCount; i++) {
+                        createChair(table, i);
+                    }
+                    return table;
+                }
+
+                chairCounts.forEach((chairCount, index) => {
+                    tableLayout.appendChild(createTable(index + 1, chairCount));
+                });
             }
-            return table;
-        }
-
-        for (let i = 1; i <= chairCounts.length; i++) {
-            tableLayout.appendChild(createTable(i, chairCounts[i - 1]));
-        }
+        });
 
         confirmButton.addEventListener("click", () => {
             const guestName = guestNameInput.value;
@@ -89,10 +98,9 @@
                     const selectedChairNumbers = Array.from(selectedChairs).map(chair => chair.textContent).join(", ");
                     orderInfo.push(`Objednávka: Stôl ${tableNumber}, Stoličky ${selectedChairNumbers}`);
 
-                    const customerOrdersRef = ref(database, 'orders/' + guestName);
-                    push(customerOrdersRef, {
-                        tableNumber,
-                        selectedChairNumbers,
+                    set(ref(database, `orders/${guestName}/Table:/${tableNumber}/`),{
+                        Chairs: selectedChairNumbers,
+
                     });
                 }
             }
@@ -112,7 +120,6 @@
                 chair.classList.remove("selected");
             });
         }
-
 
     </script>
 </body>
